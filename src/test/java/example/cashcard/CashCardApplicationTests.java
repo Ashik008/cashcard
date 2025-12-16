@@ -8,21 +8,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 class CashCardApplicationTests {
-
     @Autowired
     TestRestTemplate restTemplate;
 
-	@Test
-	void shouldReturnCashCardWhenDataIsSaved() {
+    @Test
+    void shouldReturnACashCardWhenDataIsSaved() {
         ResponseEntity<String> response = restTemplate.getForEntity("/cashcards/99", String.class);
-
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
@@ -42,6 +43,7 @@ class CashCardApplicationTests {
     }
 
     @Test
+        //@DirtiesContext
     void shouldCreateANewCashCard() {
         CashCard newCashCard = new CashCard(null, 250.00);
         ResponseEntity<Void> createResponse = restTemplate.postForEntity("/cashcards", newCashCard, Void.class);
@@ -54,6 +56,7 @@ class CashCardApplicationTests {
         DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
         Number id = documentContext.read("$.id");
         Double amount = documentContext.read("$.amount");
+
         assertThat(id).isNotNull();
         assertThat(amount).isEqualTo(250.00);
     }
